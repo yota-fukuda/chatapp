@@ -11,7 +11,9 @@ import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
-  
+
+import { useForm } from 'react-hook-form';
+
   const useStyles = makeStyles((theme) => ({
     paper: {
       marginTop: theme.spacing(8),
@@ -31,26 +33,28 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
       margin: theme.spacing(3, 0, 2),
     },
   }));
+  
+  const SignUp = ({ history }) => {
+    //   const [email, setEmail] = useState('')
+    //   const [password, setPassword] = useState('')
+    //   const [name, setName] = useState('')
+      
+      const { register, handleSubmit, errors } = useForm();
 
-const SignUp = ({ history }) => {
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    
-    const [name, setName] = useState('')
     const classes = useStyles();
 
-    const handleSubmit = e => {
-        e.preventDefault()
+    const signup_submit = async (data) => {
+        // e.preventDefault()
         
         // 非同期関数 => 終了するまで別の時間軸で動く
-        firebase.auth().createUserWithEmailAndPassword(email, password)
+        firebase.auth().createUserWithEmailAndPassword(data.name, data.email, data.password)
             .then(({ user }) => {
                 //サインアップ後の処理
                 // http://~login => http://~/
                 history.push('/')
 
                 user.updateProfile({
-                    displayName: name
+                    displayName: data.name
                 })
             })
             //エラーが起きることを知らせる。
@@ -67,50 +71,69 @@ const SignUp = ({ history }) => {
                     <LockOutlinedIcon />
                 </Avatar>
                 <Typography component="h1" variant="h5">
-                    Sign up
+                    Sign Up
                 </Typography>
-                <form className={classes.form} noValidate onSubmit={handleSubmit}>
+                <form className={classes.form} noValidate onSubmit={handleSubmit(signup_submit)}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
                             <label htmlFor='name'>Name</label>
                             <TextField
                                 variant="outlined"
-                                required
+                                // required
                                 fullWidth
                                 name='name' 
                                 type='name' 
                                 id='name' 
-                                placeholder='text' 
-                                onChange={e => setName(e.target.value)}
-                                value={name}
+                                placeholder='お名前' 
+                                // onChange={e => setName(e.target.value)}
+                                // value={name}
+                                inputRef={register({required: true})}
+                                error={Boolean(errors.name)}
+                                helperText={errors.name && "入力してください"}
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <label htmlFor='email'>E-mail</label>
                             <TextField
                                 variant="outlined"
-                                required
+                                // required
                                 fullWidth
                                 name='email' 
                                 type='email' 
                                 id='email' 
-                                placeholder='Email' 
-                                onChange={e => setEmail(e.target.value)}
-                                value={email}
+                                placeholder='メールアドレス' 
+                                // onChange={e => setEmail(e.target.value)}
+                                // value={email}
+                                inputRef={register({required: true})}
+                                error={Boolean(errors.email)}
+                                helperText={errors.email && "入力してください"}
                             />
                         </Grid>
                         <Grid item xs={12}>
                             <label htmlFor='password'>Password</label>
                             <TextField 
                                 variant="outlined"
-                                required
+                                // required
                                 fullWidth
                                 name='password' 
                                 type='password' 
                                 id='password' 
-                                placeholder='Password' 
-                                onChange={e => setPassword(e.target.value)}
-                                value={password}
+                                placeholder='パスワード' 
+                                // onChange={e => setPassword(e.target.value)}
+                                // value={password}
+                                inputRef={register({required: true, minLength: 5})}
+                                error={Boolean(errors.password)}
+                                // helperText={errors.password && "入力してください"}
+                                helperText= {(() =>{
+                                    console.log(errors)
+                                    if(errors.password && errors.password.type === 'required'){
+                                        return '入力してください。'
+                                    }
+                                    if(errors.password && errors.password.type === 'minLength'){
+                                        return '5文字以上入力してください。'
+                                    }
+                                })()
+                                }
                             />
                         </Grid>
                     </Grid>
